@@ -49,9 +49,15 @@ class BillingManager(private val context: Context) {
             }
 
             override fun onBillingServiceDisconnected() {
-                Log.d(TAG, "Billing disconnected")
+                Log.d(TAG, "Billing disconnected, retrying...")
+                billingClient.startConnection(this)
             }
         })
+    }
+
+    fun endConnection() {
+        onPurchaseComplete = null
+        billingClient.endConnection()
     }
 
     fun launchPurchase(activity: Activity, onComplete: (Boolean) -> Unit) {
@@ -127,9 +133,5 @@ class BillingManager(private val context: Context) {
                 }
             }
         }
-    }
-
-    fun endConnection() {
-        billingClient.endConnection()
     }
 }

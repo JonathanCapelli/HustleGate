@@ -209,7 +209,7 @@ fun HomeScreen(
                         fontSize = 48.sp,
                         fontWeight = FontWeight.Bold,
                         color = if (remainingTimeMillis > 0)
-                            MaterialTheme.colorScheme.primary
+                            MaterialTheme.colorScheme.onPrimaryContainer
                         else
                             MaterialTheme.colorScheme.onSurfaceVariant
                     )

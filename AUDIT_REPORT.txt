@@ -1,0 +1,391 @@
+================================================================================
+                    HUSTLEGATE - AUDIT COMPLET DU CODE
+                          18 mars 2026
+================================================================================
+
+📦 INVENTAIRE DES FICHIERS (23 fichiers Kotlin + ressources)
+================================================================================
+
+  Fichier                               Lignes   Rôle
+  ──────────────────────────────────── ──────── ────────────────────────────────
+  MainActivity.kt                        138    Navigation, point d'entrée
+  BlockedActivity.kt                     161    Écran de blocage overlay
+  AppBlockerService.kt                   ~200   AccessibilityService, timer
+  HomeScreen.kt                          ~460   Dashboard principal
+  CameraExerciseScreen.kt               ~410   Caméra + détection ML Kit
+  AppSelectionScreen.kt                  116    Sélection apps à bloquer
+  SettingsScreen.kt                      ~320   Config exercices, pas, pubs
+  StatsScreen.kt                         ~280   Statistiques et streaks
+  Exercise.kt                            ~32    Modèle de données exercice
+  ExerciseDetector.kt                    ~490   Analyse pose + comptage reps
+  PoseAnalyzer.kt                        64     Processeur de frames ML Kit
+  SoundFeedback.kt                       45     Sons de feedback (ToneGenerator)
+  HealthConnectManager.kt                100    API Health Connect (pas)
+  BillingManager.kt                      126    Google Play Billing (remove ads)
+  PreferencesManager.kt                  ~115   Wrapper SharedPreferences
+  StatsManager.kt                        ~183   Historique JSON exercices
+  NotificationHelper.kt                  87     Notifications timer
+  TimerWidgetProvider.kt                 ~82    Widget écran d'accueil
+  AdBanner.kt                            24     Composant bannière AdMob
+  ExerciseAvatar.kt                      ~360   Avatars animés (Canvas)
+  Color.kt / Theme.kt / Type.kt         ~49    Thème Material 3
+
+  RESSOURCES :
+  AndroidManifest.xml                           Permissions, services, receivers
+  values/strings.xml                    ~150    Chaînes françaises (défaut)
+  values-en/strings.xml                 ~150    Chaînes anglaises
+  widget_timer.xml                              Layout widget
+  widget_timer_info.xml                         Config widget provider
+  accessibility_service_config.xml              Config AccessibilityService
+  colors.xml / themes.xml                       Couleurs et thème XML
+
+
+================================================================================
+🔴 PROBLÈMES CRITIQUES (à corriger avant publication)
+================================================================================
+
+───────────────────────────────────────────────────────────────────────────────
+CRITIQUE #1 : R8/ProGuard désactivé en release
+Fichier : app/build.gradle.kts (ligne 22)
+───────────────────────────────────────────────────────────────────────────────
+
+  Code actuel :
+      release {
+          isMinifyEnabled = false
+      }
+
+  Problèmes :
+  - L'APK/AAB de release ne sera PAS obfusqué → le code est décompilable
+  - L'APK sera ~50% plus gros que nécessaire (ressources non minifiées)
+  - Google Play exige de plus en plus un bundle optimisé
+
+  Correction recommandée :
+      release {
+          isMinifyEnabled = true
+          isShrinkResources = true
+          proguardFiles(
+              getDefaultProguardFile("proguard-android-optimize.txt"),
+              "proguard-rules.pro"
+          )
+      }
+
+  ⚠️ Nécessite de créer un fichier proguard-rules.pro avec les règles pour :
+  - ML Kit Pose Detection
+  - Google Play Billing
+  - Health Connect
+  - AdMob (déjà géré par le SDK)
+
+───────────────────────────────────────────────────────────────────────────────
+CRITIQUE #2 : Pas de gestion du cycle de vie BillingClient
+Fichier : BillingManager.kt
+───────────────────────────────────────────────────────────────────────────────
+
+  Problème :
+  - BillingClient n'est jamais déconnecté (pas de endConnection())
+  - Si l'Activity est détruite pendant un achat, le callback
+    onPurchaseComplete capture une référence morte → fuite mémoire potentielle
+  - Pas de reconnexion automatique si le service se déconnecte
+
+  Impact : Fuite mémoire + achats potentiellement non traités
+
+  Correction recommandée :
+  - Ajouter une méthode endConnection() appelée dans onDestroy
+  - Gérer la reconnexion dans onBillingServiceDisconnected()
+  - Nettoyer onPurchaseComplete quand l'Activity se détruit
+
+───────────────────────────────────────────────────────────────────────────────
+CRITIQUE #3 : CameraProvider jamais libéré explicitement
+Fichier : CameraExerciseScreen.kt (lignes 170-210)
+───────────────────────────────────────────────────────────────────────────────
+
+  Problème :
+  - La caméra est bindée via cameraProvider.bindToLifecycle() dans un
+    AndroidView factory
+  - Le DisposableEffect (ligne 145) ferme le poseAnalyzer et le soundFeedback
+    mais ne fait PAS cameraProvider.unbindAll()
+  - Normalement le lifecycle gère ça, mais l'AndroidView factory crée
+    un scope séparé qui pourrait ne pas être nettoyé correctement
+
+  Impact : Caméra restant ouverte, batterie drainée, autres apps ne
+  peuvent pas accéder à la caméra
+
+  Correction recommandée :
+  - Capturer la référence cameraProvider et la libérer dans DisposableEffect
+
+
+================================================================================
+🟠 PROBLÈMES IMPORTANTS (fortement recommandé de corriger)
+================================================================================
+
+───────────────────────────────────────────────────────────────────────────────
+IMPORTANT #1 : Pas de feedback utilisateur si la caméra échoue
+Fichier : CameraExerciseScreen.kt (lignes 200-205)
+───────────────────────────────────────────────────────────────────────────────
+
+  Code actuel :
+      } catch (e: Exception) {
+          Log.e("CameraExercise", "Camera init failed", e)
+      }
+
+  Problème : Si la caméra échoue (utilisée par une autre app, hardware
+  défaillant), l'utilisateur voit un écran noir sans aucun message.
+
+  Correction : Ajouter un état d'erreur et afficher un message + bouton retry.
+
+───────────────────────────────────────────────────────────────────────────────
+IMPORTANT #2 : Double appel potentiel de checkAndRewardSteps
+Fichier : HomeScreen.kt (lignes 105-130)
+───────────────────────────────────────────────────────────────────────────────
+
+  Il y a deux LaunchedEffect qui peuvent appeler checkAndRewardSteps() :
+  1. LaunchedEffect(Unit) - boucle polling toutes les 1 sec (NE l'appelle PAS
+     directement, OK)
+  2. LaunchedEffect(healthAvailable) - appelle checkAndRewardSteps()
+  3. healthPermissionLauncher callback - appelle aussi checkAndRewardSteps()
+
+  La protection hasStepRewardToday() dans HealthConnectManager empêche le
+  double crédit, mais il y a un appel réseau inutile à Health Connect à
+  chaque recomposition si healthAvailable change.
+
+  Impact : Mineur, mais gaspillage de ressources.
+
+───────────────────────────────────────────────────────────────────────────────
+IMPORTANT #3 : Écriture SharedPreferences sur chaque frappe (Settings)
+Fichier : SettingsScreen.kt
+───────────────────────────────────────────────────────────────────────────────
+
+  Chaque modification d'un TextField (reps, minutes, objectif pas) écrit
+  immédiatement dans SharedPreferences. Pas de debounce.
+
+  Impact : Micro-lag sur appareils anciens pendant la saisie clavier.
+  Pas critique mais pas idéal.
+
+───────────────────────────────────────────────────────────────────────────────
+IMPORTANT #4 : formatTime() dupliqué dans 3 fichiers
+Fichiers : HomeScreen.kt, CameraExerciseScreen.kt, TimerWidgetProvider.kt
+───────────────────────────────────────────────────────────────────────────────
+
+  La même fonction formatTime(millis: Long) est copiée dans 3 fichiers.
+  Un bug corrigé dans l'un ne sera pas corrigé dans les autres.
+
+  Correction : Extraire dans un fichier utilitaire (ex: TimeUtils.kt).
+
+───────────────────────────────────────────────────────────────────────────────
+IMPORTANT #5 : StatsManager stocke le JSON dans SharedPreferences
+Fichier : StatsManager.kt
+───────────────────────────────────────────────────────────────────────────────
+
+  L'historique complet des exercices est stocké en JSON dans une seule
+  clé SharedPreferences. Après des mois d'utilisation intensive (>1000
+  exercices), la lecture/écriture pourrait devenir lente car tout le
+  JSON est rechargé à chaque appel.
+
+  Impact : Performance dégradée à long terme.
+  
+  Amélioration future : Migrer vers Room (SQLite) si nécessaire. Pour
+  une v1, c'est acceptable.
+
+───────────────────────────────────────────────────────────────────────────────
+IMPORTANT #6 : Streak cassé si l'utilisateur change de fuseau horaire
+Fichier : StatsManager.kt (updateStreak, lignes 70-82)
+───────────────────────────────────────────────────────────────────────────────
+
+  Le streak compare des dates LocalDate.now().toString() mais si l'utilisateur
+  voyage et change de fuseau horaire, "aujourd'hui" peut devenir "hier" ou
+  "demain" et casser la logique du streak.
+
+  Impact : Edge case rare. Acceptable pour une v1.
+
+
+================================================================================
+🟡 PROBLÈMES MINEURS (à améliorer)
+================================================================================
+
+───────────────────────────────────────────────────────────────────────────────
+MINEUR #1 : Pas de test unitaire ni d'instrumentation
+───────────────────────────────────────────────────────────────────────────────
+
+  Aucun test n'existe dans le projet. En particulier :
+  - ExerciseDetector : la logique de comptage devrait être testée
+  - StatsManager : la gestion du streak devrait être testée
+  - PreferencesManager : les cas limites (temps négatif, etc.)
+
+───────────────────────────────────────────────────────────────────────────────
+MINEUR #2 : Imports inutilisés dans SoundFeedback.kt
+Fichier : SoundFeedback.kt (lignes 4-5)
+───────────────────────────────────────────────────────────────────────────────
+
+  AudioAttributes et SoundPool sont importés mais jamais utilisés.
+  (Le code utilise ToneGenerator à la place.)
+
+───────────────────────────────────────────────────────────────────────────────
+MINEUR #3 : Log en français dans HealthConnectManager
+Fichier : HealthConnectManager.kt (ligne 79)
+───────────────────────────────────────────────────────────────────────────────
+
+  Log.e("HealthConnect", "Erreur lecture pas", e)
+
+  Les logs de debug ne sont pas visibles par l'utilisateur mais autant
+  les avoir en anglais pour cohérence.
+
+───────────────────────────────────────────────────────────────────────────────
+MINEUR #4 : allowBackup=true sans BackupAgent
+Fichier : AndroidManifest.xml (ligne 17)
+───────────────────────────────────────────────────────────────────────────────
+
+  android:allowBackup="true" est déclaré mais aucun BackupAgent n'est
+  configuré. Les SharedPreferences seront sauvegardées par le backup
+  automatique Android, ce qui est correct pour notre cas d'usage
+  (exercices, réglages). Pas un vrai problème.
+
+───────────────────────────────────────────────────────────────────────────────
+MINEUR #5 : Pas de gestion du bouton retour dans BlockedActivity (partiel)
+Fichier : BlockedActivity.kt (lignes 70-73)
+───────────────────────────────────────────────────────────────────────────────
+
+  Le bouton retour redirige vers le home (goHome()), ce qui est correct.
+  Mais les gestes de navigation (swipe) pourraient contourner le blocage
+  sur certains launchers.
+
+  Impact : L'utilisateur pourrait swipe-return vers l'app bloquée sur
+  certains appareils. L'AccessibilityService re-bloquera mais il y aura
+  un flash de l'app.
+
+───────────────────────────────────────────────────────────────────────────────
+MINEUR #6 : Pas de crashlytics / analytics
+───────────────────────────────────────────────────────────────────────────────
+
+  Pas de Firebase Crashlytics ni d'outil de crash reporting.
+  En production, il sera difficile de diagnostiquer les crashs utilisateurs.
+
+  Recommandation : Ajouter Firebase Crashlytics (gratuit) avant la v1.1.
+
+
+================================================================================
+✅ VÉRIFICATION DES FONCTIONNALITÉS
+================================================================================
+
+  Fonctionnalité                          Status    Notes
+  ──────────────────────────────────────  ────────  ──────────────────────────
+  Blocage d'apps (AccessibilityService)   ✅ OK     Logique solide, gère
+                                                    écran ON/OFF, system apps
+  
+  Timer (décompte temps restant)          ✅ OK     SystemClock.elapsedRealtime
+                                                    = fiable même en deep sleep
+  
+  Pause timer écran éteint                ✅ OK     BroadcastReceiver 
+                                                    SCREEN_OFF/ON
+  
+  9 exercices détectés par caméra         ✅ OK     Pompes, tractions, dips,
+                                                    squats, jumping jacks,
+                                                    sit-ups, burpees, fentes,
+                                                    mountain climbers
+  
+  Comptage de reps en temps réel          ✅ OK     Machine à états avec
+                                                    seuils d'angle
+  
+  Détection de triche (confiance pose)    ✅ OK     inFrameLikelihood >= 0.5
+  
+  Health Connect (pas quotidiens)         ✅ OK     Suspend functions dans
+                                                    coroutineScope.launch
+  
+  Protection double récompense pas        ✅ OK     hasStepRewardToday()
+  
+  Notifications (2min, 1min, temps fini)  ✅ OK     NotificationHelper avec
+                                                    canal + pendingIntent
+  
+  Widget écran d'accueil                  ✅ OK     Rafraîchi à chaque tick
+                                                    du timer + broadcast
+  
+  Statistiques (historique, streak)       ✅ OK     Calcul streak correct,
+                                                    graphique hebdo
+  
+  Achats intégrés (remove ads)            ✅ OK     Acknowledge purchase OK,
+                                                    restore purchase OK
+  
+  Bannière AdMob                          ✅ OK     Masquée si ads removed
+  
+  Son (bip reps, victoire, countdown)     ✅ OK     ToneGenerator avec
+                                                    try/catch
+  
+  Avatars animés (Canvas)                 ✅ OK     9 animations Canvas
+  
+  Permission caméra (runtime)             ✅ OK     Accompagnist Permissions +
+                                                    ActivityResultContracts
+  
+  Permission notifications (Android 13+)  ✅ OK     Demandée au launch
+  
+  i18n Français/Anglais                   ✅ OK     strings.xml complet,
+                                                    values-en complet
+  
+  Navigation Compose                      ✅ OK     NavHost avec 5 écrans
+  
+  Sélection apps à bloquer                ✅ OK     PackageManager query,
+                                                    recherche, toggle
+
+
+================================================================================
+🔒 SÉCURITÉ
+================================================================================
+
+  Point                                   Status    Détail
+  ──────────────────────────────────────  ────────  ──────────────────────────
+  Données personnelles sur serveur        ✅ Aucune  Tout est local
+  
+  Caméra — images sauvegardées            ✅ Non     Analyse en mémoire
+                                                    uniquement (ML Kit)
+  
+  SharedPreferences chiffrées             ⚠️ Non    Données non sensibles
+                                                    (timer, reps, apps
+                                                    bloquées). Acceptable.
+  
+  Ad Unit ID dans le code                 ⚠️        Hardcodé mais c'est la
+                                                    pratique standard Android.
+                                                    Le vrai risque est nul car
+                                                    l'ID est lié au package.
+  
+  SYSTEM_ALERT_WINDOW                     ✅ OK     Nécessaire pour
+                                                    BlockedActivity overlay
+  
+  Injection / OWASP                       ✅ OK     Pas d'API réseau, pas de
+                                                    WebView, pas de SQL
+
+
+================================================================================
+📋 COMPATIBILITÉ
+================================================================================
+
+  Min SDK 26 (Android 8.0) — couvre ~95% des appareils actifs
+  Target SDK 35 — conforme aux exigences Play Store 2026
+  Kotlin 2.0.21 + Compose BOM 2024.02.00 — versions stables
+  
+  ⚠️ ML Kit Pose Detection 18.0.0-beta5 — version BETA
+     → Risque : API peut changer, comportement instable possible
+     → Pas d'alternative stable disponible actuellement
+     → Acceptable pour la publication
+
+  ⚠️ Health Connect 1.1.0-alpha10 — version ALPHA  
+     → Risque : API peut changer
+     → C'est la version recommandée par Google pour l'intégration
+     → Acceptable pour la publication
+
+
+================================================================================
+📊 RÉSUMÉ
+================================================================================
+
+  🔴 Critiques    : 3  (ProGuard, BillingClient lifecycle, CameraProvider)
+  🟠 Importants   : 6  (camera error UI, double step, debounce, formatTime
+                         dupliqué, JSON SharedPrefs, timezone streak)
+  🟡 Mineurs      : 6  (tests, imports, logs FR, backup, geste retour,
+                         crashlytics)
+  ✅ Fonctionnel  : Toutes les 20 fonctionnalités sont implémentées et
+                    opérationnelles
+
+  VERDICT : L'application est fonctionnellement complète et le build
+  compile sans erreur. Les 3 problèmes critiques sont à corriger avant
+  la publication sur le Play Store pour garantir la stabilité et la
+  sécurité. Les problèmes importants et mineurs sont des améliorations
+  recommandées mais non bloquantes pour une v1.0.
+
+================================================================================

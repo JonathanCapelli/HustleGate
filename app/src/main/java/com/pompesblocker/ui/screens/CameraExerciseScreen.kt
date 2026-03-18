@@ -73,6 +73,7 @@ fun CameraExerciseScreen(
     val targetReps = exercise.getReps(prefs)
     val rewardMinutes = exercise.getRewardMinutes(prefs)
 
+    var cameraProviderRef by remember { mutableStateOf<ProcessCameraProvider?>(null) }
     var currentReps by remember { mutableIntStateOf(0) }
     var feedback by remember { mutableStateOf("") }
     var isComplete by remember { mutableStateOf(false) }
@@ -137,6 +138,7 @@ fun CameraExerciseScreen(
 
     DisposableEffect(Unit) {
         onDispose {
+            cameraProviderRef?.unbindAll()
             poseAnalyzer.close()
             soundFeedback.release()
         }
@@ -198,6 +200,7 @@ fun CameraExerciseScreen(
                                 preview,
                                 imageAnalysis
                             )
+                            cameraProviderRef = cameraProvider
                         } catch (e: Exception) {
                             Log.e("CameraExercise", "Camera init failed", e)
                         }
