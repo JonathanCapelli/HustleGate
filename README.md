@@ -1,40 +1,48 @@
 # 💪 HustleGate
 
-Application Android qui bloque l'accès à certaines apps (Instagram, YouTube, etc.) tant que tu n'as pas fait des exercices physiques **vérifiés par caméra** pour gagner du temps d'utilisation. Intègre aussi le suivi de pas via Fitbit.
+Application Android de bien-être numérique qui bloque l'accès à certaines apps tant que tu n'as pas fait des exercices physiques **vérifiés par caméra** ou atteint ton objectif de pas quotidien.
 
 ## Principe
 
 1. Tu sélectionnes les apps que tu veux bloquer
 2. Quand tu ouvres une app bloquée, un écran de blocage apparaît
-3. Tu fais un exercice **devant la caméra** (ML Kit Pose Detection) pour débloquer du temps
-4. Le timer décompte uniquement quand une app bloquée est au premier plan
-5. Quand le temps est écoulé, l'écran de blocage réapparaît
-6. Des notifications t'alertent quand il reste peu de temps (2 min, 1 min)
+3. Tu fais un exercice **devant la caméra** (IA Pose Detection) pour débloquer du temps
+4. Ou tu marches ! Tes pas comptent aussi grâce à **Santé Connect**
+5. Le timer décompte uniquement quand une app bloquée est au premier plan
+6. Quand le temps est écoulé, l'écran de blocage réapparaît
+7. Des notifications t'alertent quand il reste peu de temps
 
 ## Fonctionnalités
 
 ### 📷 Détection d'exercices par caméra
-- Utilise **ML Kit Pose Detection** pour analyser ta pose en temps réel
+- **ML Kit Pose Detection** analyse ta pose en temps réel
 - Compte les répétitions automatiquement via les angles articulaires
 - Countdown de 5 secondes pour te mettre en position
 - Feedback sonore : bip à chaque rep + son de victoire
+- Avatar animé pour chaque exercice
 
-### 🏋️ Exercices disponibles
+### 🏋️ 9 exercices disponibles
 
-| Exercice   | Répétitions | Temps gagné | Détection         |
-|------------|-------------|-------------|-------------------|
-| Pompes     | 10          | 15 min      | Angle coudes      |
-| Tractions  | 5           | 15 min      | Angle coudes      |
-| Dips       | 5           | 15 min      | Angle coudes      |
-| Squats     | 10          | 15 min      | Angle genoux      |
+| Exercice           | Emoji | Détection            |
+|--------------------|-------|----------------------|
+| Pompes             | 💪    | Angle coudes         |
+| Tractions          | 🏋️   | Angle coudes         |
+| Dips               | 💺    | Angle coudes         |
+| Squats             | 🦵    | Angle genoux         |
+| Jumping Jacks      | ⭐    | Bras + jambes écartés |
+| Abdos (Sit-ups)    | 🔥    | Angle tronc          |
+| Burpees            | 🏃    | Séquence complète    |
+| Fentes (Lunges)    | 🦿    | Angle genoux         |
+| Mountain Climbers  | ⛰️    | Genoux alternés      |
 
 > Tous les paramètres (reps, temps gagné) sont configurables dans les Paramètres.
 
-### 🚶 Intégration Fitbit
-- Connexion OAuth 2.0 avec PKCE
-- Objectif de pas quotidien configurable (défaut : 15 000 pas)
+### 🚶 Objectif de pas (Santé Connect / Health Connect)
+- Lecture des pas du jour via **Health Connect**
+- Objectif quotidien configurable (défaut : 15 000 pas)
 - Récompense de temps quand l'objectif est atteint (défaut : 60 min)
 - Une récompense par jour maximum
+- Aucune donnée envoyée à l'extérieur
 
 ### 📊 Statistiques & Historique
 - Streak de jours consécutifs (record personnel)
@@ -48,15 +56,20 @@ Application Android qui bloque l'accès à certaines apps (Instagram, YouTube, e
 - Notification quand le temps est écoulé
 
 ### 📱 Widget home screen
-- Affiche le temps restant directement sur l'écran d'accueil
-- Se met à jour en temps réel quand le timer tourne
+- Affiche le temps restant sur l'écran d'accueil
+- Mise à jour en temps réel
 - Tap pour ouvrir l'app
+
+### 💎 Modèle freemium
+- Application **gratuite** avec bannière publicitaire
+- Achat unique (3 €) pour supprimer les pubs
+- Restauration d'achat disponible dans les paramètres
 
 ### ⚙️ Paramètres configurables
 - Nombre de répétitions par exercice
 - Minutes gagnées par exercice
-- Objectif de pas Fitbit
-- Minutes gagnées pour l'objectif Fitbit
+- Objectif de pas quotidien
+- Minutes gagnées pour l'objectif de pas
 
 ## Structure du projet
 
@@ -65,15 +78,17 @@ app/src/main/
 ├── java/com/pompesblocker/
 │   ├── MainActivity.kt              # Écran principal + navigation
 │   ├── BlockedActivity.kt           # Écran affiché quand une app est bloquée
+│   ├── billing/
+│   │   └── BillingManager.kt        # Achat in-app Google Play Billing
 │   ├── camera/
 │   │   ├── ExerciseDetector.kt      # Logique de détection (angles articulaires)
 │   │   ├── PoseAnalyzer.kt          # Analyseur d'images CameraX → ML Kit
 │   │   └── SoundFeedback.kt         # Feedback sonore (bips, victoire)
 │   ├── data/
-│   │   ├── PreferencesManager.kt    # Stockage local (apps, timer, tokens, réglages)
-│   │   └── StatsManager.kt          # Historique et statistiques des exercices
-│   ├── fitbit/
-│   │   └── FitbitManager.kt         # OAuth 2.0 PKCE + API Fitbit
+│   │   ├── PreferencesManager.kt    # Stockage local (apps, timer, réglages)
+│   │   └── StatsManager.kt          # Historique et statistiques
+│   ├── health/
+│   │   └── HealthConnectManager.kt  # Lecture des pas via Health Connect
 │   ├── model/
 │   │   └── Exercise.kt              # Modèle des exercices
 │   ├── service/
@@ -82,18 +97,23 @@ app/src/main/
 │   ├── widget/
 │   │   └── TimerWidgetProvider.kt   # Widget Android (temps restant)
 │   └── ui/
+│       ├── components/
+│       │   ├── AdBanner.kt          # Bannière publicitaire AdMob
+│       │   └── ExerciseAvatar.kt    # Avatars animés des exercices
 │       ├── theme/                    # Thème Material 3
 │       └── screens/
-│           ├── HomeScreen.kt        # Accueil (timer + exercices + Fitbit)
+│           ├── HomeScreen.kt        # Accueil (timer + exercices + pas)
 │           ├── CameraExerciseScreen.kt # Caméra avec détection de pose
 │           ├── AppSelectionScreen.kt # Sélection des apps à bloquer
-│           ├── SettingsScreen.kt    # Paramètres configurables
+│           ├── SettingsScreen.kt    # Paramètres + achat in-app
 │           └── StatsScreen.kt      # Statistiques et historique
-└── res/
-    ├── drawable/                    # Icône + widget background
-    ├── layout/                      # Layout du widget
-    ├── xml/                         # Config accessibilité + widget
-    └── values/                      # Strings, thèmes, couleurs
+├── res/
+│   ├── drawable/                    # Icône + widget background
+│   ├── layout/                      # Layout du widget
+│   ├── xml/                         # Config accessibilité + widget
+│   └── values/                      # Strings, thèmes, couleurs
+└── docs/
+    └── privacy-policy.html          # Politique de confidentialité
 ```
 
 ## Prérequis
@@ -144,8 +164,9 @@ Si tu veux générer un fichier APK pour l'installer manuellement :
 - **Material 3** (design moderne avec thème dynamique)
 - **CameraX** + **ML Kit Pose Detection** (détection d'exercices par caméra)
 - **AccessibilityService** (détection des apps au premier plan)
-- **Fitbit OAuth 2.0 PKCE** (intégration pas quotidiens)
-- **OkHttp** (requêtes HTTP)
-- **SharedPreferences** (stockage local des données)
-- **App Widget** (widget Android pour l'écran d'accueil)
+- **Health Connect** (lecture des pas quotidiens)
+- **Google AdMob** (bannière publicitaire)
+- **Google Play Billing** (achat in-app)
+- **SharedPreferences** (stockage local)
+- **App Widget** (widget Android)
 - **NotificationCompat** (alertes temps restant)
