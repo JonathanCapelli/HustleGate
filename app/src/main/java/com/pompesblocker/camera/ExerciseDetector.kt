@@ -1,5 +1,7 @@
 package com.pompesblocker.camera
 
+import android.content.Context
+import com.pompesblocker.R
 import com.google.mlkit.vision.pose.Pose
 import com.google.mlkit.vision.pose.PoseLandmark
 import kotlin.math.abs
@@ -20,6 +22,7 @@ import kotlin.math.atan2
  * - Mountain Climbers       : genou vers poitrine alterné (angle hanche < 90°)
  */
 class ExerciseDetector(
+    private val context: Context,
     private val exerciseId: String,
     private val targetReps: Int,
     private val onRepCounted: (currentCount: Int) -> Unit,
@@ -27,7 +30,7 @@ class ExerciseDetector(
 ) {
     private var repCount = 0
     private var isInDownPosition = false
-    private var lastFeedback: String = "Mets-toi en position"
+    private var lastFeedback: String = context.getString(R.string.detector_get_in_position)
     private var confidence: Float = 0f
 
     // Pour mountain climbers : alternance gauche/droite
@@ -40,7 +43,7 @@ class ExerciseDetector(
     fun reset() {
         repCount = 0
         isInDownPosition = false
-        lastFeedback = "Mets-toi en position"
+        lastFeedback = context.getString(R.string.detector_get_in_position)
         confidence = 0f
         lastMountainClimberSide = null
     }
@@ -52,7 +55,7 @@ class ExerciseDetector(
     fun analyzePose(pose: Pose): Boolean {
         val landmarks = pose.allPoseLandmarks
         if (landmarks.isEmpty()) {
-            lastFeedback = "Aucune personne détectée"
+            lastFeedback = context.getString(R.string.detector_no_person)
             confidence = 0f
             return false
         }
@@ -83,7 +86,7 @@ class ExerciseDetector(
         )
 
         if (leftElbowAngle == null && rightElbowAngle == null) {
-            lastFeedback = "Coudes non visibles – ajuste la caméra"
+            lastFeedback = context.getString(R.string.detector_elbows_not_visible)
             confidence = 0f
             return false
         }
@@ -98,9 +101,9 @@ class ExerciseDetector(
             angle = elbowAngle,
             downThreshold = 100f,
             upThreshold = 155f,
-            downFeedback = "⬇️ Descends",
-            upFeedback = "⬆️ Remonte",
-            holdFeedback = "Position basse ✓ – remonte !"
+            downFeedback = context.getString(R.string.detector_pushup_down),
+            upFeedback = context.getString(R.string.detector_pushup_up),
+            holdFeedback = context.getString(R.string.detector_pushup_hold)
         )
     }
 
@@ -115,7 +118,7 @@ class ExerciseDetector(
         )
 
         if (leftElbowAngle == null && rightElbowAngle == null) {
-            lastFeedback = "Bras non visibles – ajuste la caméra"
+            lastFeedback = context.getString(R.string.detector_arms_not_visible)
             confidence = 0f
             return false
         }
@@ -131,9 +134,9 @@ class ExerciseDetector(
             angle = elbowAngle,
             downThreshold = 90f,   // position haute (bras pliés) = angle < 90
             upThreshold = 155f,    // position basse (bras tendus) = angle > 155
-            downFeedback = "⬆️ Tire vers le haut",
-            upFeedback = "⬇️ Redescends complètement",
-            holdFeedback = "Position haute ✓ – redescends !"
+            downFeedback = context.getString(R.string.detector_pullup_down),
+            upFeedback = context.getString(R.string.detector_pullup_up),
+            holdFeedback = context.getString(R.string.detector_pullup_hold)
         )
     }
 
@@ -148,7 +151,7 @@ class ExerciseDetector(
         )
 
         if (leftElbowAngle == null && rightElbowAngle == null) {
-            lastFeedback = "Bras non visibles – ajuste la caméra"
+            lastFeedback = context.getString(R.string.detector_arms_not_visible)
             confidence = 0f
             return false
         }
@@ -163,9 +166,9 @@ class ExerciseDetector(
             angle = elbowAngle,
             downThreshold = 100f,
             upThreshold = 150f,
-            downFeedback = "⬇️ Descends plus bas",
-            upFeedback = "⬆️ Pousse vers le haut",
-            holdFeedback = "Position basse ✓ – remonte !"
+            downFeedback = context.getString(R.string.detector_dip_down),
+            upFeedback = context.getString(R.string.detector_dip_up),
+            holdFeedback = context.getString(R.string.detector_dip_hold)
         )
     }
 
@@ -180,7 +183,7 @@ class ExerciseDetector(
         )
 
         if (leftKneeAngle == null && rightKneeAngle == null) {
-            lastFeedback = "Jambes non visibles – ajuste la caméra"
+            lastFeedback = context.getString(R.string.detector_legs_not_visible)
             confidence = 0f
             return false
         }
@@ -195,9 +198,9 @@ class ExerciseDetector(
             angle = kneeAngle,
             downThreshold = 100f,
             upThreshold = 160f,
-            downFeedback = "⬇️ Descends plus bas",
-            upFeedback = "⬆️ Remonte complètement",
-            holdFeedback = "Position basse ✓ – remonte !"
+            downFeedback = context.getString(R.string.detector_squat_down),
+            upFeedback = context.getString(R.string.detector_squat_up),
+            holdFeedback = context.getString(R.string.detector_squat_hold)
         )
     }
 
@@ -213,7 +216,7 @@ class ExerciseDetector(
         )
 
         if (leftArmAngle == null && rightArmAngle == null) {
-            lastFeedback = "Corps non visible – recule un peu"
+            lastFeedback = context.getString(R.string.detector_body_not_visible)
             confidence = 0f
             return false
         }
@@ -229,9 +232,9 @@ class ExerciseDetector(
             angle = armAngle,
             downThreshold = 60f,   // bras le long du corps = position fermée
             upThreshold = 140f,    // bras levés = position ouverte
-            downFeedback = "⬆️ Lève les bras !",
-            upFeedback = "⬇️ Ramène les bras",
-            holdFeedback = "Bras baissés ✓ – lève tout !"
+            downFeedback = context.getString(R.string.detector_jj_down),
+            upFeedback = context.getString(R.string.detector_jj_up),
+            holdFeedback = context.getString(R.string.detector_jj_hold)
         )
     }
 
@@ -247,7 +250,7 @@ class ExerciseDetector(
         )
 
         if (leftHipAngle == null && rightHipAngle == null) {
-            lastFeedback = "Torse non visible – pose le tel de côté"
+            lastFeedback = context.getString(R.string.detector_torso_not_visible)
             confidence = 0f
             return false
         }
@@ -263,9 +266,9 @@ class ExerciseDetector(
             angle = hipAngle,
             downThreshold = 70f,   // position haute (assis)
             upThreshold = 130f,    // position basse (couché)
-            downFeedback = "⬆️ Monte le buste !",
-            upFeedback = "⬇️ Redescends doucement",
-            holdFeedback = "Position haute ✓ – redescends !"
+            downFeedback = context.getString(R.string.detector_situp_down),
+            upFeedback = context.getString(R.string.detector_situp_up),
+            holdFeedback = context.getString(R.string.detector_situp_hold)
         )
     }
 
@@ -283,7 +286,7 @@ class ExerciseDetector(
         )
 
         if (leftHipAngle == null && rightHipAngle == null) {
-            lastFeedback = "Corps non visible – recule la caméra"
+            lastFeedback = context.getString(R.string.detector_body_step_back)
             confidence = 0f
             return false
         }
@@ -299,9 +302,9 @@ class ExerciseDetector(
             angle = hipAngle,
             downThreshold = 90f,   // position au sol
             upThreshold = 155f,    // position debout
-            downFeedback = "⬇️ Descends au sol !",
-            upFeedback = "⬆️ Saute en l'air !",
-            holdFeedback = "Position basse ✓ – relève-toi !"
+            downFeedback = context.getString(R.string.detector_burpee_down),
+            upFeedback = context.getString(R.string.detector_burpee_up),
+            holdFeedback = context.getString(R.string.detector_burpee_hold)
         )
     }
 
@@ -317,7 +320,7 @@ class ExerciseDetector(
         )
 
         if (leftKneeAngle == null && rightKneeAngle == null) {
-            lastFeedback = "Jambes non visibles – ajuste la caméra"
+            lastFeedback = context.getString(R.string.detector_legs_not_visible)
             confidence = 0f
             return false
         }
@@ -337,9 +340,9 @@ class ExerciseDetector(
             angle = kneeAngle,
             downThreshold = 100f,
             upThreshold = 155f,
-            downFeedback = "⬇️ Descends plus bas en fente",
-            upFeedback = "⬆️ Remonte et change de jambe",
-            holdFeedback = "Position basse ✓ – remonte !"
+            downFeedback = context.getString(R.string.detector_lunge_down),
+            upFeedback = context.getString(R.string.detector_lunge_up),
+            holdFeedback = context.getString(R.string.detector_lunge_hold)
         )
     }
 
@@ -355,7 +358,7 @@ class ExerciseDetector(
         )
 
         if (leftHipAngle == null && rightHipAngle == null) {
-            lastFeedback = "Corps non visible – vue de côté recommandée"
+            lastFeedback = context.getString(R.string.detector_side_view)
             confidence = 0f
             return false
         }
@@ -372,7 +375,7 @@ class ExerciseDetector(
         if (leftUp && lastMountainClimberSide != "left") {
             lastMountainClimberSide = "left"
             repCount++
-            lastFeedback = "$repCount / $targetReps ✅"
+            lastFeedback = context.getString(R.string.detector_rep_count, repCount, targetReps)
             onRepCounted(repCount)
             if (repCount >= targetReps) onExerciseComplete()
             return true
@@ -380,7 +383,7 @@ class ExerciseDetector(
         if (rightUp && lastMountainClimberSide != "right") {
             lastMountainClimberSide = "right"
             repCount++
-            lastFeedback = "$repCount / $targetReps ✅"
+            lastFeedback = context.getString(R.string.detector_rep_count, repCount, targetReps)
             onRepCounted(repCount)
             if (repCount >= targetReps) onExerciseComplete()
             return true
@@ -388,9 +391,9 @@ class ExerciseDetector(
 
         if (!leftUp && !rightUp) {
             lastMountainClimberSide = null
-            lastFeedback = "🏔️ Monte un genou vers la poitrine !"
+            lastFeedback = context.getString(R.string.detector_mc_knee_up)
         } else {
-            lastFeedback = "🏔️ Alterne ! Change de jambe"
+            lastFeedback = context.getString(R.string.detector_mc_alternate)
         }
 
         return false
@@ -419,7 +422,7 @@ class ExerciseDetector(
         if (angle > upThreshold && isInDownPosition) {
             isInDownPosition = false
             repCount++
-            lastFeedback = "$repCount / $targetReps ✅"
+            lastFeedback = context.getString(R.string.detector_rep_count, repCount, targetReps)
             onRepCounted(repCount)
             if (repCount >= targetReps) {
                 onExerciseComplete()

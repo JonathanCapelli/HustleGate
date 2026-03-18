@@ -46,6 +46,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.pompesblocker.R
 import com.pompesblocker.data.PreferencesManager
 import com.pompesblocker.health.HealthConnectManager
 import com.pompesblocker.model.Exercise
@@ -129,7 +131,7 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("💪 HustleGate") },
+                title = { Text(stringResource(R.string.home_title)) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 )
@@ -157,13 +159,13 @@ fun HomeScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            "⚠️ Service désactivé",
+                            stringResource(R.string.service_disabled),
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onErrorContainer
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            "Active le service d'accessibilité pour que le blocage fonctionne",
+                            stringResource(R.string.service_disabled_message),
                             style = MaterialTheme.typography.bodyMedium,
                             textAlign = TextAlign.Center,
                             color = MaterialTheme.colorScheme.onErrorContainer
@@ -174,7 +176,7 @@ fun HomeScreen(
                                 Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
                             )
                         }) {
-                            Text("Activer le service")
+                            Text(stringResource(R.string.enable_service))
                         }
                     }
                 }
@@ -198,7 +200,7 @@ fun HomeScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        "Temps restant",
+                        stringResource(R.string.time_remaining),
                         style = MaterialTheme.typography.titleMedium
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -214,7 +216,7 @@ fun HomeScreen(
                     if (remainingTimeMillis <= 0) {
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            "Fais un exercice pour gagner du temps !",
+                            stringResource(R.string.do_exercise_for_time),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -226,7 +228,7 @@ fun HomeScreen(
 
             // Titre section exercices
             Text(
-                "Gagner du temps",
+                stringResource(R.string.earn_time),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -247,7 +249,7 @@ fun HomeScreen(
 
             // --- Section Pas (Health Connect) ---
             Text(
-                "🚶 Objectif pas",
+                stringResource(R.string.step_goal_title),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -271,7 +273,7 @@ fun HomeScreen(
                 ) {
                     if (!healthAvailable) {
                         Text(
-                            "Santé Connect n'est pas disponible sur cet appareil",
+                            stringResource(R.string.health_connect_unavailable),
                             style = MaterialTheme.typography.bodyMedium,
                             textAlign = TextAlign.Center
                         )
@@ -280,12 +282,12 @@ fun HomeScreen(
                             Button(onClick = {
                                 context.startActivity(healthManager.getInstallIntent())
                             }) {
-                                Text("📥 Installer Santé Connect")
+                                Text(stringResource(R.string.install_health_connect))
                             }
                         }
                     } else if (!healthConnected) {
                         Text(
-                            "Autorise l'accès aux pas pour gagner du temps en marchant",
+                            stringResource(R.string.authorize_steps_message),
                             style = MaterialTheme.typography.bodyMedium,
                             textAlign = TextAlign.Center
                         )
@@ -293,10 +295,10 @@ fun HomeScreen(
                         Button(onClick = {
                             healthPermissionLauncher.launch(HealthConnectManager.PERMISSIONS)
                         }) {
-                            Text("🔗 Autoriser l'accès aux pas")
+                            Text(stringResource(R.string.authorize_steps_button))
                         }
                     } else if (stepsLoading) {
-                        Text("Chargement des pas...")
+                        Text(stringResource(R.string.loading_steps))
                     } else {
                         val currentSteps = steps ?: 0
                         val stepGoal = prefs.getStepGoal()
@@ -304,7 +306,7 @@ fun HomeScreen(
                         val progress = (currentSteps.toFloat() / stepGoal).coerceIn(0f, 1f)
 
                         Text(
-                            "$currentSteps / $stepGoal pas",
+                            stringResource(R.string.steps_progress, currentSteps, stepGoal),
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             color = if (stepsRewarded)
@@ -324,13 +326,13 @@ fun HomeScreen(
 
                         if (stepsRewarded) {
                             Text(
-                                "✅ +${stepRewardMin}min gagnées aujourd'hui !",
+                                stringResource(R.string.steps_rewarded, stepRewardMin),
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 fontWeight = FontWeight.Bold
                             )
                         } else {
                             Text(
-                                "Encore ${stepGoal - currentSteps} pas pour +${stepRewardMin}min",
+                                stringResource(R.string.steps_remaining, stepGoal - currentSteps, stepRewardMin),
                                 style = MaterialTheme.typography.bodySmall
                             )
                         }
@@ -364,7 +366,7 @@ fun HomeScreen(
                                     MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         ) {
-                            Text("🔄 Rafraîchir")
+                            Text(stringResource(R.string.refresh))
                         }
                     }
                 }
@@ -378,7 +380,7 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    "📱 Gérer les apps bloquées ($blockedAppsCount)"
+                    stringResource(R.string.manage_blocked_apps, blockedAppsCount)
                 )
             }
 
@@ -389,7 +391,7 @@ fun HomeScreen(
                 onClick = onNavigateToStats,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("📊 Statistiques")
+                Text(stringResource(R.string.statistics))
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -399,7 +401,7 @@ fun HomeScreen(
                 onClick = onNavigateToSettings,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("⚙️ Paramètres")
+                Text(stringResource(R.string.settings))
             }
 
             if (remainingTimeMillis > 0) {
@@ -414,7 +416,7 @@ fun HomeScreen(
                         contentColor = MaterialTheme.colorScheme.error
                     )
                 ) {
-                    Text("🔄 Reset timer")
+                    Text(stringResource(R.string.reset_timer))
                 }
             }
 
@@ -422,7 +424,7 @@ fun HomeScreen(
 
             // Status du service
             Text(
-                if (isServiceEnabled) "✅ Service actif" else "❌ Service inactif",
+                if (isServiceEnabled) stringResource(R.string.service_active) else stringResource(R.string.service_inactive),
                 style = MaterialTheme.typography.bodySmall,
                 color = if (isServiceEnabled)
                     MaterialTheme.colorScheme.primary
@@ -460,12 +462,12 @@ private fun ExerciseCard(exercise: Exercise, prefs: PreferencesManager, onClick:
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    "${exercise.emoji} $reps ${exercise.name}",
+                    stringResource(R.string.exercise_card_label, exercise.emoji, reps, stringResource(exercise.nameResId)),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    "+$rewardMinutes minutes",
+                    stringResource(R.string.plus_minutes, rewardMinutes),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.primary
                 )

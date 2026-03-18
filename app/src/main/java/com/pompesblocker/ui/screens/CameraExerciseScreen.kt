@@ -43,9 +43,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import com.pompesblocker.R
 import com.pompesblocker.camera.ExerciseDetector
 import com.pompesblocker.camera.PoseAnalyzer
 import com.pompesblocker.camera.SoundFeedback
@@ -72,13 +74,21 @@ fun CameraExerciseScreen(
     val rewardMinutes = exercise.getRewardMinutes(prefs)
 
     var currentReps by remember { mutableIntStateOf(0) }
-    var feedback by remember { mutableStateOf("Positionne-toi devant la caméra") }
+    var feedback by remember { mutableStateOf("") }
     var isComplete by remember { mutableStateOf(false) }
     var showCompletionScreen by remember { mutableStateOf(false) }
     var countdown by remember { mutableIntStateOf(5) }
     var countdownFinished by remember { mutableStateOf(false) }
 
     val soundFeedback = remember { SoundFeedback(context) }
+
+    val positionText = stringResource(R.string.position_yourself)
+    val letsGoText = stringResource(R.string.lets_go)
+
+    // Initialiser feedback
+    LaunchedEffect(positionText) {
+        if (feedback.isEmpty()) feedback = positionText
+    }
 
     // Compte à rebours 5 → 1 → GO!
     LaunchedEffect(Unit) {
@@ -89,11 +99,12 @@ fun CameraExerciseScreen(
         }
         countdownFinished = true
         soundFeedback.playGoSound()
-        feedback = "C'est parti ! 💪"
+        feedback = letsGoText
     }
 
     val exerciseDetector = remember {
         ExerciseDetector(
+            context = context,
             exerciseId = exercise.id,
             targetReps = targetReps,
             onRepCounted = { count ->
@@ -142,7 +153,7 @@ fun CameraExerciseScreen(
                 val statsManager = StatsManager(context)
                 statsManager.recordExercise(
                     exerciseId = exercise.id,
-                    exerciseName = exercise.name,
+                    exerciseName = context.getString(exercise.nameResId),
                     reps = targetReps,
                     minutesEarned = rewardMinutes
                 )
@@ -210,7 +221,7 @@ fun CameraExerciseScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            "Installe-toi !",
+                            stringResource(R.string.get_ready),
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
@@ -232,7 +243,7 @@ fun CameraExerciseScreen(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            "${exercise.emoji} ${exercise.name}",
+                            "${exercise.emoji} ${stringResource(exercise.nameResId)}",
                             fontSize = 20.sp,
                             color = Color.White.copy(alpha = 0.8f)
                         )
@@ -243,7 +254,7 @@ fun CameraExerciseScreen(
                                 contentColor = Color.White
                             )
                         ) {
-                            Text("✕ Annuler")
+                            Text(stringResource(R.string.cancel))
                         }
                     }
                 }
@@ -265,7 +276,7 @@ fun CameraExerciseScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        "${exercise.emoji} ${exercise.name}",
+                        "${exercise.emoji} ${stringResource(exercise.nameResId)}",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
@@ -335,7 +346,7 @@ fun CameraExerciseScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        "+${rewardMinutes}min si tu complètes",
+                        stringResource(R.string.reward_if_complete, rewardMinutes),
                         color = Color.White.copy(alpha = 0.8f),
                         fontSize = 14.sp
                     )
@@ -348,7 +359,7 @@ fun CameraExerciseScreen(
                             contentColor = Color.White
                         )
                     ) {
-                        Text("✕ Annuler")
+                        Text(stringResource(R.string.cancel))
                     }
                 }
             }
@@ -380,7 +391,7 @@ private fun CompletionScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            "Bravo !",
+            stringResource(R.string.congrats),
             fontSize = 32.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -389,7 +400,7 @@ private fun CompletionScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            "$reps ${exercise.name} validées par la caméra !",
+            stringResource(R.string.exercise_validated, reps, stringResource(exercise.nameResId)),
             fontSize = 18.sp,
             color = MaterialTheme.colorScheme.onPrimaryContainer,
             textAlign = TextAlign.Center
@@ -398,7 +409,7 @@ private fun CompletionScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            "+${rewardMinutes} minutes",
+            stringResource(R.string.plus_minutes_reward, rewardMinutes),
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -411,7 +422,7 @@ private fun CompletionScreen(
             modifier = Modifier.fillMaxWidth(0.7f)
         ) {
             Text(
-                "✅ Récupérer mon temps",
+                stringResource(R.string.claim_time),
                 fontSize = 18.sp,
                 modifier = Modifier.padding(8.dp)
             )

@@ -37,6 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
 import com.pompesblocker.data.PreferencesManager
 import com.pompesblocker.model.Exercise
@@ -57,7 +58,7 @@ class BlockedActivity : ComponentActivity() {
         if (isGranted) {
             pendingExercise?.let { recreate() }
         } else {
-            Toast.makeText(this, "La caméra est nécessaire pour valider les exercices", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, getString(R.string.camera_required_toast), Toast.LENGTH_LONG).show()
         }
     }
 
@@ -107,7 +108,7 @@ class BlockedActivity : ComponentActivity() {
                             Spacer(modifier = Modifier.height(16.dp))
 
                             Text(
-                                "App bloquée !",
+                                stringResource(R.string.app_blocked),
                                 style = MaterialTheme.typography.headlineLarge,
                                 fontWeight = FontWeight.Bold,
                                 textAlign = TextAlign.Center
@@ -116,7 +117,7 @@ class BlockedActivity : ComponentActivity() {
                             Spacer(modifier = Modifier.height(8.dp))
 
                             Text(
-                                "Fais un exercice devant la caméra pour débloquer du temps",
+                                stringResource(R.string.do_exercise_to_unlock),
                                 style = MaterialTheme.typography.bodyLarge,
                                 textAlign = TextAlign.Center,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -153,7 +154,7 @@ class BlockedActivity : ComponentActivity() {
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
                                         Text(
-                                            "$reps ${exercise.name}  (+$rewardMin min)",
+                                            stringResource(R.string.exercise_button_label, reps, stringResource(exercise.nameResId), rewardMin),
                                             fontSize = 15.sp
                                         )
                                     }
@@ -164,7 +165,7 @@ class BlockedActivity : ComponentActivity() {
                             Spacer(modifier = Modifier.height(16.dp))
 
                             OutlinedButton(onClick = { goHome() }) {
-                                Text("🏠 Retour à l'accueil")
+                                Text(stringResource(R.string.go_home))
                             }
                         }
                     }

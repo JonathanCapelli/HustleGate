@@ -32,7 +32,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.core.graphics.drawable.toBitmap
+import com.pompesblocker.R
 import com.pompesblocker.data.PreferencesManager
 
 private data class AppInfo(
@@ -77,10 +79,10 @@ fun AppSelectionScreen(onBack: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Apps bloquées") },
+                title = { Text(stringResource(R.string.blocked_apps)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 }
             )
@@ -98,13 +100,13 @@ fun AppSelectionScreen(onBack: () -> Unit) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
-                placeholder = { Text("Rechercher une app...") },
+                placeholder = { Text(stringResource(R.string.search_app)) },
                 singleLine = true
             )
 
             // Compteur
             Text(
-                "${blockedApps.size} app(s) bloquée(s)",
+                stringResource(R.string.blocked_apps_count, blockedApps.size),
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant

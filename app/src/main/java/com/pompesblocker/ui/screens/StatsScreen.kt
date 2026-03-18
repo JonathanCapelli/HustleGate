@@ -35,6 +35,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.pompesblocker.R
 import com.pompesblocker.data.StatsManager
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -56,10 +58,10 @@ fun StatsScreen(onBack: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("📊 Statistiques") },
+                title = { Text(stringResource(R.string.statistics)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 }
             )
@@ -91,8 +93,8 @@ fun StatsScreen(onBack: () -> Unit) {
                     Text("🔥", fontSize = 40.sp)
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        if (currentStreak > 0) "$currentStreak jour${if (currentStreak > 1) "s" else ""} consécutif${if (currentStreak > 1) "s" else ""}"
-                        else "Fais un exercice pour commencer !",
+                        if (currentStreak > 0) stringResource(R.string.streak_days, currentStreak, if (currentStreak > 1) "s" else "", if (currentStreak > 1) "s" else "")
+                        else stringResource(R.string.start_exercise_streak),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = if (currentStreak > 0)
@@ -103,7 +105,7 @@ fun StatsScreen(onBack: () -> Unit) {
                     )
                     if (bestStreak > currentStreak) {
                         Text(
-                            "Record : $bestStreak jours",
+                            stringResource(R.string.record_streak, bestStreak),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                         )
@@ -115,7 +117,7 @@ fun StatsScreen(onBack: () -> Unit) {
 
             // --- Aujourd'hui ---
             Text(
-                "Aujourd'hui",
+                stringResource(R.string.today),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -126,13 +128,13 @@ fun StatsScreen(onBack: () -> Unit) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     if (todayCount == 0) {
                         Text(
-                            "Aucun exercice aujourd'hui",
+                            stringResource(R.string.no_exercise_today),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     } else {
                         Text(
-                            "$todayCount exercice${if (todayCount > 1) "s" else ""} complété${if (todayCount > 1) "s" else ""}",
+                            stringResource(R.string.exercises_completed, todayCount, if (todayCount > 1) "s" else "", if (todayCount > 1) "s" else ""),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
@@ -146,7 +148,7 @@ fun StatsScreen(onBack: () -> Unit) {
                             ) {
                                 Text(name, style = MaterialTheme.typography.bodyMedium)
                                 Text(
-                                    "$reps reps",
+                                    "$reps ${stringResource(R.string.reps_label)}",
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.primary
                                 )
@@ -160,7 +162,7 @@ fun StatsScreen(onBack: () -> Unit) {
 
             // --- Graphique semaine ---
             Text(
-                "Cette semaine",
+                stringResource(R.string.this_week),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -225,7 +227,7 @@ fun StatsScreen(onBack: () -> Unit) {
 
             // --- Totaux ---
             Text(
-                "Total",
+                stringResource(R.string.total),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -239,19 +241,19 @@ fun StatsScreen(onBack: () -> Unit) {
                 StatCard(
                     emoji = "🏋️",
                     value = "$totalExercises",
-                    label = "Exercices",
+                    label = stringResource(R.string.stat_exercises),
                     modifier = Modifier.weight(1f)
                 )
                 StatCard(
                     emoji = "💪",
                     value = "$totalReps",
-                    label = "Reps total",
+                    label = stringResource(R.string.stat_total_reps),
                     modifier = Modifier.weight(1f)
                 )
                 StatCard(
                     emoji = "⏱️",
                     value = "${totalMinutes}m",
-                    label = "Gagnées",
+                    label = stringResource(R.string.stat_earned),
                     modifier = Modifier.weight(1f)
                 )
             }

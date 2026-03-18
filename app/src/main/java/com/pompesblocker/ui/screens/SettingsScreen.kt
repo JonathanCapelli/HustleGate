@@ -40,6 +40,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.pompesblocker.R
 import com.pompesblocker.billing.BillingManager
 import com.pompesblocker.data.PreferencesManager
 import com.pompesblocker.model.defaultExercises
@@ -61,10 +63,10 @@ fun SettingsScreen(onBack: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("⚙️ Paramètres") },
+                title = { Text(stringResource(R.string.settings)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 }
             )
@@ -79,7 +81,7 @@ fun SettingsScreen(onBack: () -> Unit) {
         ) {
             // --- Section Exercices ---
             Text(
-                "💪 Exercices",
+                stringResource(R.string.exercises_title),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -105,7 +107,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                         modifier = Modifier.padding(16.dp)
                     ) {
                         Text(
-                            "${exercise.emoji} ${exercise.name}",
+                            "${exercise.emoji} ${stringResource(exercise.nameResId)}",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
@@ -123,7 +125,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                                         if (value > 0) prefs.setExerciseReps(exercise.id, value)
                                     }
                                 },
-                                label = { Text("Répétitions") },
+                                label = { Text(stringResource(R.string.repetitions)) },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 modifier = Modifier.weight(1f),
                                 singleLine = true
@@ -139,7 +141,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                                         if (value > 0) prefs.setExerciseRewardMinutes(exercise.id, value)
                                     }
                                 },
-                                label = { Text("Minutes gagnées") },
+                                label = { Text(stringResource(R.string.minutes_earned)) },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 modifier = Modifier.weight(1f),
                                 singleLine = true
@@ -159,7 +161,7 @@ fun SettingsScreen(onBack: () -> Unit) {
 
             // --- Section Pas ---
             Text(
-                "🚶 Objectif pas",
+                stringResource(R.string.step_goal_title),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -190,7 +192,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                                     if (value > 0) prefs.setStepGoal(value)
                                 }
                             },
-                            label = { Text("Objectif pas") },
+                            label = { Text(stringResource(R.string.step_goal_label)) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             modifier = Modifier.weight(1f),
                             singleLine = true
@@ -206,7 +208,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                                     if (value > 0) prefs.setStepRewardMinutes(value)
                                 }
                             },
-                            label = { Text("Minutes gagnées") },
+                            label = { Text(stringResource(R.string.minutes_earned)) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             modifier = Modifier.weight(1f),
                             singleLine = true
@@ -223,7 +225,7 @@ fun SettingsScreen(onBack: () -> Unit) {
 
             // --- Section Publicité ---
             Text(
-                "📢 Publicité",
+                stringResource(R.string.ads_title),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -245,20 +247,20 @@ fun SettingsScreen(onBack: () -> Unit) {
                 ) {
                     if (adsRemoved) {
                         Text(
-                            "✅ Publicités supprimées",
+                            stringResource(R.string.ads_removed),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            "Merci pour ton soutien !",
+                            stringResource(R.string.thanks_support),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     } else {
                         Text(
-                            "Supprime les publicités pour 3 €",
+                            stringResource(R.string.remove_ads_price),
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Spacer(modifier = Modifier.height(12.dp))
@@ -268,7 +270,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                                     billingManager.launchPurchase(activity) { success ->
                                         if (success) {
                                             adsRemoved = true
-                                            Toast.makeText(context, "✅ Publicités supprimées !", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, context.getString(R.string.ads_removed_toast), Toast.LENGTH_SHORT).show()
                                         }
                                     }
                                 }
@@ -276,21 +278,21 @@ fun SettingsScreen(onBack: () -> Unit) {
                             modifier = Modifier.fillMaxWidth(),
                             enabled = billingReady
                         ) {
-                            Text("💎 Supprimer les pubs — 3 €")
+                            Text(stringResource(R.string.buy_remove_ads))
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         OutlinedButton(
                             onClick = {
                                 billingManager.restorePurchases { restored ->
                                     adsRemoved = restored
-                                    val msg = if (restored) "✅ Achat restauré !" else "Aucun achat trouvé"
+                                    val msg = if (restored) context.getString(R.string.purchase_restored) else context.getString(R.string.no_purchase_found)
                                     Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                                 }
                             },
                             modifier = Modifier.fillMaxWidth(),
                             enabled = billingReady
                         ) {
-                            Text("🔄 Restaurer un achat")
+                            Text(stringResource(R.string.restore_purchase))
                         }
                     }
                 }

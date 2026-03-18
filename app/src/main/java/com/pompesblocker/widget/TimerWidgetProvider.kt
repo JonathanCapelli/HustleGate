@@ -46,7 +46,7 @@ class TimerWidgetProvider : AppWidgetProvider() {
             views.setTextViewText(R.id.widget_time, timeText)
             views.setTextViewText(
                 R.id.widget_status,
-                if (remainingMillis > 0) "⏱️ Temps restant" else "🚫 Pas de temps"
+                if (remainingMillis > 0) context.getString(R.string.widget_time_remaining) else context.getString(R.string.widget_no_time)
             )
 
             // Click ouvre l'app

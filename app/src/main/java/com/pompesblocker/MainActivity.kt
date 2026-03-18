@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -122,18 +123,18 @@ class MainActivity : ComponentActivity() {
                                 Text("📷", fontSize = 64.sp)
                                 Spacer(modifier = Modifier.height(16.dp))
                                 Text(
-                                    "La caméra est nécessaire pour valider tes exercices",
+                                    stringResource(R.string.camera_needed),
                                     style = MaterialTheme.typography.titleMedium,
                                     textAlign = TextAlign.Center
                                 )
                                 Spacer(modifier = Modifier.height(24.dp))
                                 @OptIn(ExperimentalPermissionsApi::class)
                                 Button(onClick = { cameraPermissionState.launchPermissionRequest() }) {
-                                    Text("Autoriser la caméra")
+                                    Text(stringResource(R.string.allow_camera))
                                 }
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Button(onClick = { navController.popBackStack() }) {
-                                    Text("Annuler")
+                                    Text(stringResource(R.string.cancel_simple))
                                 }
                             }
                         }

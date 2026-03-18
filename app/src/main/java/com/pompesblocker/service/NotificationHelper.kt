@@ -8,6 +8,7 @@ import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.pompesblocker.MainActivity
+import com.pompesblocker.R
 
 /**
  * Gère les notifications pour HustleGate.
@@ -29,10 +30,10 @@ class NotificationHelper(private val context: Context) {
     private fun createNotificationChannel() {
         val channel = NotificationChannel(
             CHANNEL_ID,
-            "Timer HustleGate",
+            context.getString(R.string.notification_channel_name),
             NotificationManager.IMPORTANCE_HIGH
         ).apply {
-            description = "Notifications de temps restant"
+            description = context.getString(R.string.notification_channel_desc)
             enableVibration(true)
         }
 
@@ -49,14 +50,14 @@ class NotificationHelper(private val context: Context) {
         )
 
         val message = when {
-            minutesLeft <= 0 -> "⏰ Temps écoulé ! Fais un exercice pour continuer"
-            minutesLeft == 1 -> "⚠️ Plus qu'1 minute !"
-            else -> "⚠️ Plus que $minutesLeft minutes !"
+            minutesLeft <= 0 -> context.getString(R.string.notif_time_up)
+            minutesLeft == 1 -> context.getString(R.string.notif_one_minute)
+            else -> context.getString(R.string.notif_minutes_left, minutesLeft)
         }
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_dialog_alert)
-            .setContentTitle("💪 HustleGate")
+            .setContentTitle(context.getString(R.string.notif_title))
             .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pendingIntent)
@@ -77,8 +78,8 @@ class NotificationHelper(private val context: Context) {
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_dialog_alert)
-            .setContentTitle("🚫 Temps écoulé !")
-            .setContentText("Fais un exercice pour débloquer du temps")
+            .setContentTitle(context.getString(R.string.notif_time_up_title))
+            .setContentText(context.getString(R.string.notif_time_up_message))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
