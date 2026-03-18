@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HustleGate</string>
+    <string name="accessibility_service_description">HustleGate utilise ce service pour détecter quand vous ouvrez une application bloquée et vous proposer des exercices pour la débloquer.</string>
+    <string name="widget_description">Affiche le temps restant sur l\'écran d\'accueil</string>
+</resources>
