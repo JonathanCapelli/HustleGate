@@ -30,10 +30,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -100,6 +102,22 @@ fun SettingsScreen(onBack: () -> Unit) {
                     )
                 }
 
+                // Debounce save for reps
+                LaunchedEffect(reps) {
+                    delay(500)
+                    reps.toIntOrNull()?.let { value ->
+                        if (value > 0) prefs.setExerciseReps(exercise.id, value)
+                    }
+                }
+
+                // Debounce save for reward minutes
+                LaunchedEffect(rewardMin) {
+                    delay(500)
+                    rewardMin.toIntOrNull()?.let { value ->
+                        if (value > 0) prefs.setExerciseRewardMinutes(exercise.id, value)
+                    }
+                }
+
                 Card(
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -121,9 +139,6 @@ fun SettingsScreen(onBack: () -> Unit) {
                                 value = reps,
                                 onValueChange = { newValue ->
                                     reps = newValue
-                                    newValue.toIntOrNull()?.let { value ->
-                                        if (value > 0) prefs.setExerciseReps(exercise.id, value)
-                                    }
                                 },
                                 label = { Text(stringResource(R.string.repetitions)) },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -137,9 +152,6 @@ fun SettingsScreen(onBack: () -> Unit) {
                                 value = rewardMin,
                                 onValueChange = { newValue ->
                                     rewardMin = newValue
-                                    newValue.toIntOrNull()?.let { value ->
-                                        if (value > 0) prefs.setExerciseRewardMinutes(exercise.id, value)
-                                    }
                                 },
                                 label = { Text(stringResource(R.string.minutes_earned)) },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),

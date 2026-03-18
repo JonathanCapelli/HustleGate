@@ -76,7 +76,7 @@ class HealthConnectManager(private val context: Context) {
 
             response.records.sumOf { it.count }.toInt()
         } catch (e: Exception) {
-            android.util.Log.e("HealthConnect", "Erreur lecture pas", e)
+            android.util.Log.e("HealthConnect", "Error reading steps", e)
             null
         }
     }

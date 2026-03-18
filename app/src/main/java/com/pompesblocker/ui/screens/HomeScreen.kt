@@ -57,6 +57,7 @@ import com.pompesblocker.model.getRewardMillis
 import com.pompesblocker.model.getRewardMinutes
 import com.pompesblocker.ui.components.ExerciseAvatar
 import com.pompesblocker.ui.components.AdBanner
+import com.pompesblocker.util.TimeUtils
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -111,11 +112,11 @@ fun HomeScreen(
         }
     }
 
-    // Vérifier les permissions Health Connect et charger les pas
+    // Vérifier les permissions Health Connect et charger les pas (une seule fois)
     LaunchedEffect(healthAvailable) {
         if (healthAvailable) {
             healthConnected = healthManager.hasPermissions()
-            if (healthConnected) {
+            if (healthConnected && steps == null) {
                 stepsLoading = true
                 val (todaySteps, rewarded) = healthManager.checkAndRewardSteps()
                 steps = todaySteps
@@ -205,7 +206,7 @@ fun HomeScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        formatTime(remainingTimeMillis),
+                        TimeUtils.formatTime(remainingTimeMillis),
                         fontSize = 48.sp,
                         fontWeight = FontWeight.Bold,
                         color = if (remainingTimeMillis > 0)
@@ -475,14 +476,6 @@ private fun ExerciseCard(exercise: Exercise, prefs: PreferencesManager, onClick:
             Text("▶", fontSize = 24.sp)
         }
     }
-}
-
-private fun formatTime(millis: Long): String {
-    if (millis <= 0) return "00:00"
-    val totalSeconds = millis / 1000
-    val minutes = totalSeconds / 60
-    val seconds = totalSeconds % 60
-    return "%02d:%02d".format(minutes, seconds)
 }
 
 private fun isAccessibilityServiceEnabled(context: Context): Boolean {

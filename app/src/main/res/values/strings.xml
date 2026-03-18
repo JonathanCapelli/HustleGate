@@ -152,4 +152,8 @@
     <string name="detector_mc_knee_up">🏔️ Monte un genou vers la poitrine !</string>
     <string name="detector_mc_alternate">🏔️ Alterne ! Change de jambe</string>
     <string name="detector_rep_count">%1$d / %2$d ✅</string>
+
+    <!-- Camera error -->
+    <string name="camera_error">❌ Erreur caméra. Réessaye.</string>
+    <string name="retry">🔄 Réessayer</string>
 </resources>

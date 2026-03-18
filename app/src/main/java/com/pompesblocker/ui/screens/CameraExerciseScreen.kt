@@ -74,6 +74,7 @@ fun CameraExerciseScreen(
     val rewardMinutes = exercise.getRewardMinutes(prefs)
 
     var cameraProviderRef by remember { mutableStateOf<ProcessCameraProvider?>(null) }
+    var cameraError by remember { mutableStateOf(false) }
     var currentReps by remember { mutableIntStateOf(0) }
     var feedback by remember { mutableStateOf("") }
     var isComplete by remember { mutableStateOf(false) }
@@ -203,6 +204,7 @@ fun CameraExerciseScreen(
                             cameraProviderRef = cameraProvider
                         } catch (e: Exception) {
                             Log.e("CameraExercise", "Camera init failed", e)
+                            cameraError = true
                         }
                     }, ContextCompat.getMainExecutor(ctx))
 
@@ -212,7 +214,40 @@ fun CameraExerciseScreen(
             )
 
             // Overlay UI par-dessus la caméra
-            if (!countdownFinished) {
+            if (cameraError) {
+                // Error overlay
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.8f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            stringResource(R.string.camera_error),
+                            fontSize = 20.sp,
+                            color = Color.White,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(onClick = {
+                            cameraError = false
+                            // Force recomposition to retry camera
+                            cameraProviderRef?.unbindAll()
+                            cameraProviderRef = null
+                        }) {
+                            Text(stringResource(R.string.retry))
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        OutlinedButton(
+                            onClick = onCancel,
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+                        ) {
+                            Text(stringResource(R.string.cancel))
+                        }
+                    }
+                }
+            } else if (!countdownFinished) {
                 // Overlay countdown
                 Box(
                     modifier = Modifier

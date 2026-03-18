@@ -8,6 +8,7 @@ import android.content.Intent
 import android.widget.RemoteViews
 import com.pompesblocker.R
 import com.pompesblocker.data.PreferencesManager
+import com.pompesblocker.util.TimeUtils
 
 class TimerWidgetProvider : AppWidgetProvider() {
 
@@ -40,7 +41,7 @@ class TimerWidgetProvider : AppWidgetProvider() {
         fun updateWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
             val prefs = PreferencesManager(context)
             val remainingMillis = prefs.getRemainingTimeMillis()
-            val timeText = formatTime(remainingMillis)
+            val timeText = TimeUtils.formatTime(remainingMillis)
 
             val views = RemoteViews(context.packageName, R.layout.widget_timer)
             views.setTextViewText(R.id.widget_time, timeText)
@@ -60,14 +61,6 @@ class TimerWidgetProvider : AppWidgetProvider() {
             }
 
             appWidgetManager.updateAppWidget(appWidgetId, views)
-        }
-
-        private fun formatTime(millis: Long): String {
-            if (millis <= 0) return "00:00"
-            val totalSeconds = millis / 1000
-            val minutes = totalSeconds / 60
-            val seconds = totalSeconds % 60
-            return "%02d:%02d".format(minutes, seconds)
         }
 
         fun refreshAll(context: Context) {
