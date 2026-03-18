@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.pompesblocker"
+    namespace = "com.hustlegate.app"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.pompesblocker"
+        applicationId = "com.hustlegate.app"
         minSdk = 26
         targetSdk = 35
         versionCode = 1

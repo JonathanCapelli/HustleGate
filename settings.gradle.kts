@@ -17,5 +17,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "PompesBlocker"
+rootProject.name = "HustleGate"
 include(":app")

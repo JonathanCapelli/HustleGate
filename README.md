@@ -75,7 +75,7 @@ Application Android de bien-être numérique qui bloque l'accès à certaines ap
 
 ```
 app/src/main/
-├── java/com/pompesblocker/
+├── java/com/hustlegate/app/
 │   ├── MainActivity.kt              # Écran principal + navigation
 │   ├── BlockedActivity.kt           # Écran affiché quand une app est bloquée
 │   ├── billing/
@@ -127,7 +127,7 @@ app/src/main/
 ### 1. Ouvrir le projet
 
 - Lance Android Studio
-- **File → Open** → sélectionne le dossier `PompesBlocker`
+- **File → Open** → sélectionne le dossier `HustleGate`
 - Attends que la synchronisation Gradle se termine (barre de progression en bas)
 
 ### 2. Préparer le téléphone
@@ -154,7 +154,7 @@ Si tu veux générer un fichier APK pour l'installer manuellement :
 
 ## Configuration après installation
 
-1. **Activer le service d'accessibilité** : l'app t'y invite au lancement. Va dans Paramètres → Accessibilité → PompesBlocker → Activer
+1. **Activer le service d'accessibilité** : l'app t'y invite au lancement. Va dans Paramètres → Accessibilité → HustleGate → Activer
 2. **Sélectionner les apps à bloquer** : dans l'app, clique sur "Gérer les apps bloquées" et active le switch pour chaque app souhaitée
 3. C'est prêt ! Essaie d'ouvrir une app bloquée pour vérifier que ça fonctionne
 

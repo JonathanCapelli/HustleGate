@@ -20,7 +20,7 @@
 -dontwarn kotlinx.coroutines.**
 
 # Keep data classes used with JSON (StatsManager)
--keep class com.pompesblocker.data.StatsManager$ExerciseRecord { *; }
+-keep class com.hustlegate.app.data.StatsManager$ExerciseRecord { *; }
 
 # Keep R8 from stripping Compose
 -dontwarn androidx.compose.**
