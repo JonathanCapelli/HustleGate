@@ -47,10 +47,12 @@ import com.hustlegate.app.model.getRewardMinutes
 import com.hustlegate.app.ui.components.ExerciseAvatar
 import com.hustlegate.app.ui.screens.CameraExerciseScreen
 import com.hustlegate.app.ui.theme.HustleGateTheme
+import com.hustlegate.app.ui.components.InterstitialAdManager
 
 class BlockedActivity : ComponentActivity() {
 
     private var pendingExercise: Exercise? = null
+    private lateinit var interstitialAdManager: InterstitialAdManager
 
     private val cameraPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -64,6 +66,9 @@ class BlockedActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        interstitialAdManager = InterstitialAdManager(this)
+        interstitialAdManager.load()
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -131,7 +136,16 @@ class BlockedActivity : ComponentActivity() {
                                 Button(
                                     onClick = {
                                         if (hasCameraPermission()) {
-                                            selectedExercise = exercise
+                                            val p = PreferencesManager(this@BlockedActivity)
+                                            if (p.shouldShowInterstitial()) {
+                                                val ex = exercise
+                                                interstitialAdManager.showIfReady(this@BlockedActivity) {
+                                                    selectedExercise = ex
+                                                }
+                                            } else {
+                                                selectedExercise = exercise
+                                            }
+                                            p.incrementExerciseCompletedCount()
                                         } else {
                                             pendingExercise = exercise
                                             requestCameraPermission()

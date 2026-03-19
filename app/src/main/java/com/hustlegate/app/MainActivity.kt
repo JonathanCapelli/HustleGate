@@ -35,8 +35,11 @@ import com.hustlegate.app.ui.theme.HustleGateTheme
 import com.hustlegate.app.data.PreferencesManager
 import com.hustlegate.app.model.defaultExercises
 import com.google.android.gms.ads.MobileAds
+import com.hustlegate.app.ui.components.InterstitialAdManager
 
 class MainActivity : ComponentActivity() {
+
+    private lateinit var interstitialAdManager: InterstitialAdManager
 
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -48,6 +51,10 @@ class MainActivity : ComponentActivity() {
 
         // Initialiser AdMob
         MobileAds.initialize(this) {}
+
+        // Précharger l'interstitielle
+        interstitialAdManager = InterstitialAdManager(this)
+        interstitialAdManager.load()
 
         // Demander la permission de notification sur Android 13+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -69,7 +76,14 @@ class MainActivity : ComponentActivity() {
                                 navController.navigate("settings")
                             },
                             onNavigateToCamera = { exerciseId ->
-                                navController.navigate("camera/$exerciseId")
+                                if (prefs.shouldShowInterstitial()) {
+                                    interstitialAdManager.showIfReady(this@MainActivity) {
+                                        navController.navigate("camera/$exerciseId")
+                                    }
+                                } else {
+                                    navController.navigate("camera/$exerciseId")
+                                }
+                                prefs.incrementExerciseCompletedCount()
                             },
                             onNavigateToStats = {
                                 navController.navigate("stats")

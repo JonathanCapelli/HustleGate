@@ -116,4 +116,18 @@ class PreferencesManager(context: Context) {
     fun setAdsRemoved(removed: Boolean) {
         prefs.edit { putBoolean("ads_removed", removed) }
     }
+
+    fun getExerciseCompletedCount(): Int {
+        return prefs.getInt("exercise_completed_count", 0)
+    }
+
+    fun incrementExerciseCompletedCount(): Int {
+        val count = getExerciseCompletedCount() + 1
+        prefs.edit { putInt("exercise_completed_count", count) }
+        return count
+    }
+
+    fun shouldShowInterstitial(): Boolean {
+        return !hasRemovedAds() && getExerciseCompletedCount() > 0 && getExerciseCompletedCount() % 4 == 0
+    }
 }
