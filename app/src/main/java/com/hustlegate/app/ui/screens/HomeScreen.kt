@@ -137,6 +137,11 @@ fun HomeScreen(
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 )
             )
+        },
+        bottomBar = {
+            if (!prefs.hasRemovedAds()) {
+                AdBanner()
+            }
         }
     ) { padding ->
         Column(
@@ -433,11 +438,6 @@ fun HomeScreen(
                     MaterialTheme.colorScheme.error
             )
         }
-    }
-
-    // Bannière pub en bas si pas acheté
-    if (!prefs.hasRemovedAds()) {
-        AdBanner()
     }
 }
 
